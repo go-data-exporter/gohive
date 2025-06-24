@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 
-	_ "github.com/beltran/gohive/v2"
+	_ "github.com/go-data-exporter/gohive/v2"
 )
 
 func main() {

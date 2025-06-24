@@ -18,7 +18,7 @@ import (
 	"database/sql/driver"
 
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/beltran/gohive/v2/hiveserver"
+	"github.com/go-data-exporter/gohive/v2/hiveserver"
 	"github.com/beltran/gosasl"
 	"github.com/pkg/errors"
 	"golang.org/x/net/publicsuffix"

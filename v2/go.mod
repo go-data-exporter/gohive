@@ -1,4 +1,4 @@
-module github.com/beltran/gohive/v2
+module github.com/go-data-exporter/gohive/v2
 
 go 1.23.0
 

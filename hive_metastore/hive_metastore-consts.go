@@ -7,7 +7,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/beltran/gohive/gohivemeta/fb303"
+	"github.com/go-data-exporter/gohive/gohivemeta/fb303"
 	"time"
 )
 

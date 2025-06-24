@@ -4,7 +4,7 @@ import (
 	"context"
 	"log"
 
-	"github.com/beltran/gohive"
+	"github.com/go-data-exporter/gohive"
 )
 
 func main() {

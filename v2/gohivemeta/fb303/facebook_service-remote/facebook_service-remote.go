@@ -4,7 +4,7 @@ package main
 
 import (
 	"context"
-	"github.com/beltran/gohive/v2/gohivemeta/fb303"
+	"github.com/go-data-exporter/gohive/v2/gohivemeta/fb303"
 	"flag"
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"

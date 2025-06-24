@@ -3,7 +3,7 @@ package gohive
 import (
 	"fmt"
 	"github.com/apache/thrift/lib/go/thrift"
-	"github.com/beltran/gohive/hive_metastore"
+	"github.com/go-data-exporter/gohive/hive_metastore"
 	"os/user"
 	"strings"
 )

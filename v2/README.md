@@ -15,7 +15,7 @@ For detailed migration instructions, please see the [Migration Guide](MIGRATION.
 ## Installation
 GoHive can be installed with:
 ```
-go get github.com/beltran/gohive/v2
+go get github.com/go-data-exporter/gohive/v2
 ```
 
 To add kerberos support GoHive requires header files to build against the GSSAPI C library. They can be installed with:
@@ -25,7 +25,7 @@ To add kerberos support GoHive requires header files to build against the GSSAPI
 
 Then:
 ```
-go get -tags kerberos github.com/beltran/gohive/v2
+go get -tags kerberos github.com/go-data-exporter/gohive/v2
 ```
 
 ## Quickstart
@@ -37,7 +37,7 @@ GoHive supports the standard `database/sql` interface:
 ```go
 import (
     "database/sql"
-    _ "github.com/beltran/gohive"
+    _ "github.com/go-data-exporter/gohive"
 )
 
 // Open a connection
@@ -71,7 +71,7 @@ for rows.Next() {
 ``` go
 import (
     "database/sql"
-    _ "github.com/beltran/gohive"
+    _ "github.com/go-data-exporter/gohive"
 )
 
 db, err := sql.Open("hive", "hive://hs2.example.com:10000/default?auth=KERBEROS&service=hive")
@@ -89,7 +89,7 @@ This implies setting in hive-site.xml:
 ``` go
 import (
     "database/sql"
-    _ "github.com/beltran/gohive"
+    _ "github.com/go-data-exporter/gohive"
 )
 
 db, err := sql.Open("hive", "hive://myUsername:myPassword@hs2.example.com:10000/default?auth=NONE")
@@ -106,7 +106,7 @@ This implies setting in hive-site.xml:
 ``` go
 import (
     "database/sql"
-    _ "github.com/beltran/gohive"
+    _ "github.com/go-data-exporter/gohive"
 )
 
 db, err := sql.Open("hive", "hive://@hs2.example.com:10000/default?auth=NOSASL")
@@ -124,7 +124,7 @@ Binary transport mode is supported for auth mechanisms PLAIN, KERBEROS and NOSAS
 ``` go
 import (
     "database/sql"
-    _ "github.com/beltran/gohive"
+    _ "github.com/go-data-exporter/gohive"
 )
 
 db, err := sql.Open("hive", "hive://@hs2.example.com:10000/default?auth=NOSASL&service=hive&transport=http&httpPath=cliservice")
@@ -169,4 +169,4 @@ Tests can be run with:
 ```
 ./scripts/integration
 ```
-This uses [dhive](https://github.com/beltran/dhive) and it will start three docker instances with Hive, the Hive metastore, and Kerberos. `kinit`, `klist`, `kdestroy` have to be installed locally. `hs2.example.com` and `hm.example.com` will have to be an alias for 127.0.0.1 in `/etc/hosts`. The krb5 configuration file should be created with `bash scripts/create_krbconf.sh`. Overall the [steps used in the travis CI](https://github.com/beltran/gohive/blob/ec69b5601829296a56ca0558693ed30c11180a94/.travis.yml#L24-L46) can be followed.
+This uses [dhive](https://github.com/beltran/dhive) and it will start three docker instances with Hive, the Hive metastore, and Kerberos. `kinit`, `klist`, `kdestroy` have to be installed locally. `hs2.example.com` and `hm.example.com` will have to be an alias for 127.0.0.1 in `/etc/hosts`. The krb5 configuration file should be created with `bash scripts/create_krbconf.sh`. Overall the [steps used in the travis CI](https://github.com/go-data-exporter/gohive/blob/ec69b5601829296a56ca0558693ed30c11180a94/.travis.yml#L24-L46) can be followed.
