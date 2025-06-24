@@ -25,9 +25,11 @@ import (
 	"golang.org/x/net/publicsuffix"
 )
 
-const DEFAULT_FETCH_SIZE int64 = 1000
-const ZOOKEEPER_DEFAULT_NAMESPACE = "hiveserver2"
-const DEFAULT_MAX_LENGTH = 16384000
+const (
+	DEFAULT_FETCH_SIZE          int64 = 1000
+	ZOOKEEPER_DEFAULT_NAMESPACE       = "hiveserver2"
+	DEFAULT_MAX_LENGTH                = 16384000
+)
 
 type DialContextFunc func(ctx context.Context, network, addr string) (net.Conn, error)
 
@@ -101,7 +103,8 @@ type HiveError struct {
 // Connect to zookeper to get hive hosts and then connect to hive.
 // hosts is in format host1:port1,host2:port2,host3:port3 (zookeeper hosts).
 func ConnectZookeeper(hosts string, auth string,
-	configuration *ConnectConfiguration) (conn *Connection, err error) {
+	configuration *ConnectConfiguration,
+) (conn *Connection, err error) {
 	// consider host as zookeeper quorum
 	zkHosts := strings.Split(hosts, ",")
 	zkConn, _, err := zk.Connect(zkHosts, time.Second)
@@ -137,12 +140,12 @@ func ConnectZookeeper(hosts string, auth string,
 		return nil, errors.Errorf("no Hive server is registered in the specified Zookeeper namespace %s",
 			configuration.ZookeeperNamespace)
 	}
-
 }
 
 // Connect to hive server
 func Connect(host string, port int, auth string,
-	configuration *ConnectConfiguration) (conn *Connection, err error) {
+	configuration *ConnectConfiguration,
+) (conn *Connection, err error) {
 	return innerConnect(context.TODO(), host, port, auth, configuration)
 }
 
@@ -191,8 +194,8 @@ func dial(ctx context.Context, addr string, dialFn DialContextFunc, timeout time
 }
 
 func innerConnect(ctx context.Context, host string, port int, auth string,
-	configuration *ConnectConfiguration) (conn *Connection, err error) {
-
+	configuration *ConnectConfiguration,
+) (conn *Connection, err error) {
 	var socket thrift.TTransport
 	addr := fmt.Sprintf("%s:%d", host, port)
 	if configuration.DialContext != nil {
@@ -460,12 +463,14 @@ func (c *Connection) Close() error {
 	return nil
 }
 
-const _RUNNING = 0
-const _FINISHED = 1
-const _NONE = 2
-const _CONTEXT_DONE = 3
-const _ERROR = 4
-const _ASYNC_ENDED = 5
+const (
+	_RUNNING      = 0
+	_FINISHED     = 1
+	_NONE         = 2
+	_CONTEXT_DONE = 3
+	_ERROR        = 4
+	_ASYNC_ENDED  = 5
+)
 
 // Cursor is used for fetching the rows after a query
 type Cursor struct {
@@ -843,6 +848,128 @@ func (c *Cursor) RowMap(ctx context.Context) map[string]interface{} {
 	return m
 }
 
+// RowSlice returns one row as a slice. Advances the cursor one
+func (c *Cursor) RowSlice(ctx context.Context) []any {
+	c.Err = nil
+	c.fetchIfEmpty(ctx)
+	if c.Err != nil {
+		return nil
+	}
+
+	d := c.Description()
+	if c.Err != nil || len(d) != len(c.queue) {
+		return nil
+	}
+	m := make([]any, len(c.queue))
+	for i := 0; i < len(c.queue); i++ {
+		columnType := d[i][1]
+		if columnType == "BOOLEAN_TYPE" {
+			if isNull(c.queue[i].BoolVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].BoolVal.Values[c.columnIndex]
+			}
+		} else if columnType == "TINYINT_TYPE" {
+			if isNull(c.queue[i].ByteVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].ByteVal.Values[c.columnIndex]
+			}
+		} else if columnType == "SMALLINT_TYPE" {
+			if isNull(c.queue[i].I16Val.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].I16Val.Values[c.columnIndex]
+			}
+		} else if columnType == "INT_TYPE" {
+			if isNull(c.queue[i].I32Val.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].I32Val.Values[c.columnIndex]
+			}
+		} else if columnType == "BIGINT_TYPE" {
+			if isNull(c.queue[i].I64Val.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].I64Val.Values[c.columnIndex]
+			}
+		} else if columnType == "FLOAT_TYPE" {
+			if isNull(c.queue[i].DoubleVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].DoubleVal.Values[c.columnIndex]
+			}
+		} else if columnType == "DOUBLE_TYPE" {
+			if isNull(c.queue[i].DoubleVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].DoubleVal.Values[c.columnIndex]
+			}
+		} else if columnType == "STRING_TYPE" || columnType == "VARCHAR_TYPE" || columnType == "CHAR_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "TIMESTAMP_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "DATE_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "BINARY_TYPE" {
+			if isNull(c.queue[i].BinaryVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].BinaryVal.Values[c.columnIndex]
+			}
+		} else if columnType == "ARRAY_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "MAP_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "STRUCT_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "UNION_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				m[i] = c.queue[i].StringVal.Values[c.columnIndex]
+			}
+		} else if columnType == "DECIMAL_TYPE" {
+			if isNull(c.queue[i].StringVal.Nulls, c.columnIndex) {
+				m[i] = nil
+			} else {
+				v := c.queue[i].StringVal.Values[c.columnIndex]
+				if strings.Contains(v, ".") {
+					v = strings.TrimRight(v, "0")
+					v = strings.TrimRight(v, ".")
+				}
+				m[i] = v
+			}
+		}
+	}
+	c.columnIndex++
+	return m
+}
+
 // FetchOne returns one row and advances the cursor one
 func (c *Cursor) FetchOne(ctx context.Context, dests ...interface{}) {
 	c.Err = nil
@@ -1114,7 +1241,7 @@ func (c *Cursor) Error() error {
 func (c *Cursor) pollUntilData(ctx context.Context, n int) (err error) {
 	rowsAvailable := make(chan error)
 	var stopLock sync.Mutex
-	var done = false
+	done := false
 	go func() {
 		defer close(rowsAvailable)
 		for true {
@@ -1269,13 +1396,15 @@ func safeStatus(status *hiveserver.TStatus) *hiveserver.TStatus {
 	return status
 }
 
-var DEFAULT_SQL_STATE = ""
-var DEFAULT_ERROR_CODE = int32(-1)
-var DEFAULT_ERROR_MESSAGE = "unknown error"
-var DEFAULT_STATUS = hiveserver.TStatus{
-	StatusCode:   hiveserver.TStatusCode_ERROR_STATUS,
-	InfoMessages: nil,
-	SqlState:     &DEFAULT_SQL_STATE,
-	ErrorCode:    &DEFAULT_ERROR_CODE,
-	ErrorMessage: &DEFAULT_ERROR_MESSAGE,
-}
+var (
+	DEFAULT_SQL_STATE     = ""
+	DEFAULT_ERROR_CODE    = int32(-1)
+	DEFAULT_ERROR_MESSAGE = "unknown error"
+	DEFAULT_STATUS        = hiveserver.TStatus{
+		StatusCode:   hiveserver.TStatusCode_ERROR_STATUS,
+		InfoMessages: nil,
+		SqlState:     &DEFAULT_SQL_STATE,
+		ErrorCode:    &DEFAULT_ERROR_CODE,
+		ErrorMessage: &DEFAULT_ERROR_MESSAGE,
+	}
+)
