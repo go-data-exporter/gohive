@@ -2,8 +2,6 @@ module github.com/go-data-exporter/gohive
 
 go 1.23.0
 
-toolchain go1.23.6
-
 require (
 	github.com/apache/thrift v0.22.0
 	github.com/beltran/gosasl v1.0.0
